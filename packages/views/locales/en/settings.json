@@ -330,7 +330,16 @@
   },
   "chat": {
     "floating_label": "Floating chat window",
-    "floating_hint": "Show the floating chat button on every page."
+    "floating_hint": "Show the floating chat button on every page.",
+    "appearance_title": "My message appearance",
+    "appearance_hint": "Customize only your message bubbles on this device. Leave a field empty to use the current theme.",
+    "text_color": "Text color",
+    "background_color": "Background color",
+    "border_color": "Border color",
+    "color_picker": "{{color}} picker",
+    "theme_default": "Theme default",
+    "preview_message": "This is how your messages will look.",
+    "restore_defaults": "Restore defaults"
   },
   "issue": {
     "opening": {

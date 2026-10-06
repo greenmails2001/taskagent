@@ -260,6 +260,74 @@ describe("chat store — floating window preference", () => {
   });
 });
 
+describe("chat store — user message appearance", () => {
+  const APPEARANCE_KEY = "multica:chat:userMessageAppearance";
+
+  it("uses theme-driven defaults when no custom colors are stored", () => {
+    const store = createChatStore({ storage: memStorage() });
+
+    expect(store.getState().userMessageAppearance).toEqual({
+      textColor: null,
+      backgroundColor: null,
+      borderColor: null,
+    });
+  });
+
+  it("persists valid hex colors and restores them in a new store", () => {
+    const storage = memStorage();
+    const store = createChatStore({ storage });
+    const appearance = {
+      textColor: "#112233",
+      backgroundColor: "#abc",
+      borderColor: "#445566cc",
+    };
+
+    store.getState().setUserMessageAppearance(appearance);
+
+    expect(JSON.parse(storage.getItem(APPEARANCE_KEY) ?? "{}"))
+      .toEqual(appearance);
+    expect(createChatStore({ storage }).getState().userMessageAppearance)
+      .toEqual(appearance);
+  });
+
+  it("rejects invalid persisted CSS values instead of applying them", () => {
+    const storage = memStorage();
+    storage.setItem(
+      APPEARANCE_KEY,
+      JSON.stringify({
+        textColor: "red",
+        backgroundColor: "url(https://example.com/image.png)",
+        borderColor: "#12345",
+      }),
+    );
+
+    expect(createChatStore({ storage }).getState().userMessageAppearance).toEqual({
+      textColor: null,
+      backgroundColor: null,
+      borderColor: null,
+    });
+  });
+
+  it("restores theme defaults and removes the persisted override", () => {
+    const storage = memStorage();
+    const store = createChatStore({ storage });
+    store.getState().setUserMessageAppearance({
+      textColor: "#112233",
+      backgroundColor: "#abcdef",
+      borderColor: "#778899",
+    });
+
+    store.getState().resetUserMessageAppearance();
+
+    expect(store.getState().userMessageAppearance).toEqual({
+      textColor: null,
+      backgroundColor: null,
+      borderColor: null,
+    });
+    expect(storage.getItem(APPEARANCE_KEY)).toBeNull();
+  });
+});
+
 // The ledger is what makes a durable draft restore (#5219) apply at most once.
 // A consume request can be lost — retries exhausted, app closed mid-flight — and
 // the row then comes back on the next fetch. Without a record that survives the

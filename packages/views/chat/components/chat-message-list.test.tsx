@@ -3,6 +3,8 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { I18nProvider } from "@multica/core/i18n/react";
 import { chatKeys } from "@multica/core/chat/queries";
+import { createChatStore, registerChatStore } from "@multica/core/chat";
+import type { StorageAdapter } from "@multica/core/types";
 import type { Attachment, TaskMessagePayload } from "@multica/core/types";
 import type { ReactElement } from "react";
 import enChat from "../../locales/en/chat.json";
@@ -52,6 +54,15 @@ import { ChatMessageList } from "./chat-message-list";
 
 const TEST_RESOURCES = { en: { chat: enChat } };
 const TASK_ID = "6af44cbe-80ab-4dfe-b07d-bd3cfd588f4d";
+
+function memStorage(): StorageAdapter {
+  const values = new Map<string, string>();
+  return {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key),
+  };
+}
 
 function taskMsg(
   seq: number,
@@ -114,6 +125,61 @@ function pushTaskMessage(qc: QueryClient, msg: TaskMessagePayload) {
     );
   });
 }
+
+describe("ChatMessageList user message appearance", () => {
+  it("applies custom colors to user bubbles without styling assistant messages", async () => {
+    const store = createChatStore({ storage: memStorage() });
+    store.getState().setUserMessageAppearance({
+      textColor: "#112233",
+      backgroundColor: "#abcdef",
+      borderColor: "#445566",
+    });
+    registerChatStore(store);
+
+    const { container } = render(
+      <I18nProvider locale="en" resources={TEST_RESOURCES}>
+        <QueryClientProvider client={new QueryClient()}>
+          <ChatMessageList
+            messages={[
+              {
+                id: "user-appearance",
+                chat_session_id: "s1",
+                role: "user",
+                content: "Custom user bubble",
+                task_id: null,
+                created_at: new Date(0).toISOString(),
+              },
+              {
+                id: "assistant-appearance",
+                chat_session_id: "s1",
+                role: "assistant",
+                content: "Unchanged assistant message",
+                task_id: null,
+                created_at: new Date(1).toISOString(),
+              },
+            ]}
+            pendingTask={undefined}
+            availability="online"
+          />
+        </QueryClientProvider>
+      </I18nProvider>,
+    );
+
+    const userBubble = (await screen.findByText("Custom user bubble")).closest(
+      "[data-user-message-bubble]",
+    );
+    expect(userBubble).toHaveStyle({
+      color: "#112233",
+      backgroundColor: "#abcdef",
+      borderColor: "#445566",
+      borderWidth: "1px",
+    });
+
+    const assistant = screen.getByText("Unchanged assistant message");
+    expect(assistant.closest('[style*="background-color"]')).toBeNull();
+    expect(container.querySelectorAll("[data-user-message-bubble]")).toHaveLength(1);
+  });
+});
 
 describe("ChatMessageList live follow (#6697)", () => {
   it("follows appended output immediately only while Virtuoso is at the live end", () => {

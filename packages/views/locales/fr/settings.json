@@ -330,7 +330,16 @@
   },
   "chat": {
     "floating_label": "Fenêtre de discussion flottante",
-    "floating_hint": "Afficher le bouton de chat flottant sur chaque page."
+    "floating_hint": "Afficher le bouton de chat flottant sur chaque page.",
+    "appearance_title": "Apparence de mes messages",
+    "appearance_hint": "Personnalisez uniquement vos bulles de message sur cet appareil. Laissez un champ vide pour utiliser le thème actuel.",
+    "text_color": "Couleur du texte",
+    "background_color": "Couleur de fond",
+    "border_color": "Couleur de bordure",
+    "color_picker": "Sélecteur : {{color}}",
+    "theme_default": "Valeur du thème",
+    "preview_message": "Voici l’apparence de vos messages.",
+    "restore_defaults": "Restaurer les valeurs par défaut"
   },
   "issue": {
     "opening": {

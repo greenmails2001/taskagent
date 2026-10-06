@@ -74,6 +74,40 @@ const OPEN_KEY = "multica:chat:isOpen";
  * be turned off from the Settings → Chat tab.
  */
 const FLOATING_KEY = "multica:chat:floatingChatEnabled";
+const USER_MESSAGE_APPEARANCE_KEY = "multica:chat:userMessageAppearance";
+
+export interface UserMessageAppearance {
+  textColor: string | null;
+  backgroundColor: string | null;
+  borderColor: string | null;
+}
+
+const DEFAULT_USER_MESSAGE_APPEARANCE: UserMessageAppearance = {
+  textColor: null,
+  backgroundColor: null,
+  borderColor: null,
+};
+
+const HEX_COLOR_PATTERN = /^#(?:[\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/i;
+
+function normalizeUserMessageColor(value: unknown): string | null {
+  return typeof value === "string" && HEX_COLOR_PATTERN.test(value) ? value : null;
+}
+
+function readUserMessageAppearance(storage: StorageAdapter): UserMessageAppearance {
+  const raw = storage.getItem(USER_MESSAGE_APPEARANCE_KEY);
+  if (!raw) return DEFAULT_USER_MESSAGE_APPEARANCE;
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    return {
+      textColor: normalizeUserMessageColor(parsed.textColor),
+      backgroundColor: normalizeUserMessageColor(parsed.backgroundColor),
+      borderColor: normalizeUserMessageColor(parsed.borderColor),
+    };
+  } catch {
+    return DEFAULT_USER_MESSAGE_APPEARANCE;
+  }
+}
 
 function readDrafts(storage: StorageAdapter, key: string): Record<string, string> {
   const raw = storage.getItem(key);
@@ -304,6 +338,8 @@ export interface ChatState {
   isOpen: boolean;
   /** Settings preference: is the floating chat window available at all. */
   floatingChatEnabled: boolean;
+  /** Optional local overrides for bubbles authored by the current user. */
+  userMessageAppearance: UserMessageAppearance;
   activeSessionId: string | null;
   selectedAgentId: string | null;
   /** Project context for the next session. Existing sessions remain bound to
@@ -325,6 +361,8 @@ export interface ChatState {
   setOpen: (open: boolean) => void;
   toggle: () => void;
   setFloatingChatEnabled: (enabled: boolean) => void;
+  setUserMessageAppearance: (appearance: UserMessageAppearance) => void;
+  resetUserMessageAppearance: () => void;
   setActiveSession: (id: string | null) => void;
   setSelectedAgentId: (id: string) => void;
   setSelectedProjectId: (id: string | null) => void;
@@ -391,6 +429,7 @@ export function createChatStore(options: ChatStoreOptions) {
   const store = create<ChatState>((set, get) => ({
     isOpen: initialIsOpen,
     floatingChatEnabled: initialFloatingEnabled,
+    userMessageAppearance: readUserMessageAppearance(storage),
     activeSessionId: storage.getItem(wsKey(SESSION_STORAGE_KEY)),
     selectedAgentId: initialAgentId,
     selectedProjectId: storage.getItem(wsKey(PROJECT_STORAGE_KEY)),
@@ -419,6 +458,19 @@ export function createChatStore(options: ChatStoreOptions) {
       // does not linger until the next toggle.
       set(enabled ? { floatingChatEnabled: true } : { floatingChatEnabled: false, isOpen: false });
       if (!enabled) storage.setItem(OPEN_KEY, "false");
+    },
+    setUserMessageAppearance: (appearance) => {
+      const normalized = {
+        textColor: normalizeUserMessageColor(appearance.textColor),
+        backgroundColor: normalizeUserMessageColor(appearance.backgroundColor),
+        borderColor: normalizeUserMessageColor(appearance.borderColor),
+      };
+      storage.setItem(USER_MESSAGE_APPEARANCE_KEY, JSON.stringify(normalized));
+      set({ userMessageAppearance: normalized });
+    },
+    resetUserMessageAppearance: () => {
+      storage.removeItem(USER_MESSAGE_APPEARANCE_KEY);
+      set({ userMessageAppearance: DEFAULT_USER_MESSAGE_APPEARANCE });
     },
     setActiveSession: (id) => {
       logger.info("setActiveSession", { from: get().activeSessionId, to: id });

@@ -42,7 +42,7 @@ import type {
   ChatQuickAction,
   TaskMessagePayload,
 } from "@multica/core/types";
-import type { ChatTimelineItem } from "@multica/core/chat";
+import { useChatStore, type ChatTimelineItem } from "@multica/core/chat";
 import { buildTimeline } from "../../common/task-transcript";
 import { traceToolArgSummary } from "../../common/task-transcript/trace-event-presenter";
 import { OnboardingStarterCards } from "./onboarding-starter-cards";
@@ -463,6 +463,7 @@ const MessageBubble = memo(function MessageBubble({
   quickActionsPendingMessageId: string | null;
   starterCardsMessageId: string | null;
 }) {
+  const userMessageAppearance = useChatStore((s) => s.userMessageAppearance);
   // The live row and the persisted assistant row both land here under one key,
   // and both render <AssistantMessage> — same component type, same position —
   // so React reconciles rather than remounts at task completion.
@@ -481,9 +482,21 @@ const MessageBubble = memo(function MessageBubble({
   const { message } = item;
 
   if (message.role === "user") {
+    const userMessageStyle = {
+      color: userMessageAppearance.textColor ?? undefined,
+      backgroundColor: userMessageAppearance.backgroundColor ?? undefined,
+      borderColor: userMessageAppearance.borderColor ?? undefined,
+      borderWidth: userMessageAppearance.borderColor ? 1 : undefined,
+      borderStyle: userMessageAppearance.borderColor ? "solid" : undefined,
+    } as const;
+
     return (
       <div className="flex justify-end">
-        <div className="rounded-2xl bg-muted px-3.5 py-2 text-body max-w-[80%] break-words">
+        <div
+          data-user-message-bubble
+          className="rounded-2xl bg-muted px-3.5 py-2 text-body max-w-[80%] break-words"
+          style={userMessageStyle}
+        >
           {/* User messages are authored as markdown in ContentEditor, so they
            * render through the SAME RichContent as assistant replies and as
            * Issue/Comment — a Mermaid fence a user pastes is a diagram here

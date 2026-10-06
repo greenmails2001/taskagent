@@ -329,7 +329,16 @@
   },
   "chat": {
     "floating_label": "플로팅 채팅 창",
-    "floating_hint": "모든 페이지에 플로팅 채팅 버튼을 표시합니다."
+    "floating_hint": "모든 페이지에 플로팅 채팅 버튼을 표시합니다.",
+    "appearance_title": "내 메시지 모양",
+    "appearance_hint": "이 기기에서 내 메시지 버블만 사용자 지정합니다. 빈 필드는 현재 테마를 사용합니다.",
+    "text_color": "텍스트 색상",
+    "background_color": "배경색",
+    "border_color": "테두리 색상",
+    "color_picker": "{{color}} 선택기",
+    "theme_default": "테마 기본값",
+    "preview_message": "메시지가 이렇게 표시됩니다.",
+    "restore_defaults": "기본값 복원"
   },
   "issue": {
     "opening": {

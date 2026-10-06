@@ -329,7 +329,16 @@
   },
   "chat": {
     "floating_label": "悬浮聊天窗",
-    "floating_hint": "在每个页面显示悬浮聊天按钮。"
+    "floating_hint": "在每个页面显示悬浮聊天按钮。",
+    "appearance_title": "我的消息外观",
+    "appearance_hint": "仅在此设备上自定义您的消息气泡。字段留空时使用当前主题。",
+    "text_color": "文本颜色",
+    "background_color": "背景颜色",
+    "border_color": "边框颜色",
+    "color_picker": "{{color}}选择器",
+    "theme_default": "主题默认值",
+    "preview_message": "您的消息将如此显示。",
+    "restore_defaults": "恢复默认值"
   },
   "issue": {
     "opening": {

@@ -329,7 +329,16 @@
   },
   "chat": {
     "floating_label": "フローティングチャット",
-    "floating_hint": "すべてのページにフローティングチャットボタンを表示します。"
+    "floating_hint": "すべてのページにフローティングチャットボタンを表示します。",
+    "appearance_title": "自分のメッセージの外観",
+    "appearance_hint": "このデバイスで自分のメッセージバブルのみをカスタマイズします。空欄の場合は現在のテーマを使用します。",
+    "text_color": "文字色",
+    "background_color": "背景色",
+    "border_color": "枠線色",
+    "color_picker": "{{color}}ピッカー",
+    "theme_default": "テーマの既定値",
+    "preview_message": "メッセージはこのように表示されます。",
+    "restore_defaults": "既定値に戻す"
   },
   "issue": {
     "opening": {
