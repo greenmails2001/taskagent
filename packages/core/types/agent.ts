@@ -759,6 +759,62 @@ export interface AgentBuilderRuntimeSwitch {
   runtime_id: string;
 }
 
+export interface AIProvider {
+  id: string;
+  provider_key: string;
+  display_name: string;
+  protocol: string;
+  credential_mode: "runtime_managed" | "control_plane_managed";
+  transport: string;
+}
+
+export interface AIProviderAccount {
+  id: string;
+  ai_provider_id: string;
+  display_name: string;
+  status: "unverified" | "valid" | "invalid" | "revoked";
+}
+
+export interface ProviderModel {
+  id: string;
+  ai_provider_id: string;
+  model_key: string;
+  display_name: string;
+}
+
+export interface ProviderModelEffort {
+  provider_model_id: string;
+  effort_key: string;
+  display_name: string;
+  sort_order: number;
+}
+
+export interface AgentAIConfiguration {
+  agent_id: string;
+  runtime_id: string;
+  ai_provider_id: string;
+  ai_provider_key: string;
+  credential_mode: "runtime_managed" | "control_plane_managed";
+  provider_account_id: string | null;
+  provider_model_id: string;
+  model: string;
+  effort_key: string | null;
+}
+
+export interface AgentAIConfigurationProfile {
+  ai_provider_id: string;
+  provider_account_id: string | null;
+  provider_model_id: string;
+  effort_key: string | null;
+}
+
+export interface UpdateAgentAIConfigurationRequest {
+  ai_provider_id: string;
+  provider_model_id: string;
+  provider_account_id: string | null;
+  effort_key: string | null;
+}
+
 export interface UpdateAgentRequest {
   name?: string;
   description?: string;

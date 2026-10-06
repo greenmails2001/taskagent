@@ -3,6 +3,29 @@ import type { IssueWakeup, IssueWakeupInput, IssueWakeupSummaryRow, PausedWakeup
 import type { WorkspaceWakeupPage, WorkspaceWakeupFilters } from "../types/issue-wakeup";
 import { WorkspaceWakeupPageSchema, IssueWakeupSchema, IssueWakeupSummaryRowSchema, PausedWakeupSchema, SystemWakeupSchema, WakeupRunSchema, WorkspaceSystemWakeupSchema } from "./schemas";
 import type { InboxFilters } from "../inbox/filter-store";
+
+export interface InstanceEmailSettings {
+  source: "database" | "environment";
+  enabled: boolean;
+  smtp_host: string;
+  smtp_port: number;
+  smtp_tls: "starttls" | "implicit" | "";
+  smtp_username: string;
+  smtp_from_email: string;
+  smtp_ehlo_name: string;
+  password_configured: boolean;
+}
+
+export interface UpdateInstanceEmailSettingsRequest {
+  enabled: boolean;
+  smtp_host: string;
+  smtp_port: number;
+  smtp_tls: "starttls" | "implicit";
+  smtp_username: string;
+  smtp_password: string;
+  smtp_from_email: string;
+  smtp_ehlo_name: string;
+}
 import type { ArchivedInboxPage, ArchivedInboxFacets } from "../types/inbox";
 import { configStore } from "../config";
 import type {
@@ -1027,6 +1050,26 @@ export class ApiClient {
     });
   }
 
+  async getInstanceEmailSettings(): Promise<InstanceEmailSettings> {
+	return this.fetch<InstanceEmailSettings>("/api/admin/email-settings");
+  }
+
+  async updateInstanceEmailSettings(
+	settings: UpdateInstanceEmailSettingsRequest,
+  ): Promise<InstanceEmailSettings> {
+	return this.fetch<InstanceEmailSettings>("/api/admin/email-settings", {
+	  method: "PUT",
+	  body: JSON.stringify(settings),
+	});
+  }
+
+  async testInstanceEmailSettings(email: string): Promise<{ message: string }> {
+	return this.fetch<{ message: string }>("/api/admin/email-settings/test", {
+	  method: "POST",
+	  body: JSON.stringify({ email }),
+	});
+  }
+
   async markOnboardingComplete(payload?: {
     completion_path?: OnboardingCompletionPath;
     workspace_id?: string;
@@ -1953,6 +1996,53 @@ export class ApiClient {
       method: "PUT",
       body: JSON.stringify(data),
     });
+  }
+
+  async listCompatibleAIProviders(workspaceId: string, runtimeProvider: string) {
+    return this.fetch<{ ai_providers: import("../types").AIProvider[] }>(
+      `/api/workspaces/${workspaceId}/ai-providers/compatible/${encodeURIComponent(runtimeProvider)}`,
+    );
+  }
+
+  async listAIProviderAccounts(workspaceId: string, providerId: string) {
+    return this.fetch<{
+      credential_mode: import("../types").AIProvider["credential_mode"];
+      ai_provider_accounts: import("../types").AIProviderAccount[];
+    }>(`/api/workspaces/${workspaceId}/ai-providers/${providerId}/accounts`);
+  }
+
+  async listAIProviderModels(workspaceId: string, providerId: string) {
+    return this.fetch<{ provider_models: import("../types").ProviderModel[] }>(
+      `/api/workspaces/${workspaceId}/ai-providers/${providerId}/models`,
+    );
+  }
+
+  async listAIProviderModelEfforts(workspaceId: string, providerId: string, modelId: string) {
+    return this.fetch<{ provider_model_efforts: import("../types").ProviderModelEffort[] }>(
+      `/api/workspaces/${workspaceId}/ai-providers/${providerId}/models/${modelId}/efforts`,
+    );
+  }
+
+  async getAgentAIConfiguration(id: string) {
+    return this.fetch<{
+      ai_configuration: import("../types").AgentAIConfiguration | null;
+      ai_configuration_profiles: import("../types").AgentAIConfigurationProfile[];
+    }>(
+      `/api/agents/${id}/ai-configuration`,
+    );
+  }
+
+  async updateAgentAIConfiguration(
+    id: string,
+    data: import("../types").UpdateAgentAIConfigurationRequest,
+  ) {
+    return this.fetch<{
+      ai_configuration: import("../types").AgentAIConfiguration;
+      ai_configuration_profiles: import("../types").AgentAIConfigurationProfile[];
+    }>(
+      `/api/agents/${id}/ai-configuration`,
+      { method: "PUT", body: JSON.stringify(data) },
+    );
   }
 
   async archiveAgent(id: string): Promise<Agent> {

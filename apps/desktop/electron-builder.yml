@@ -1,5 +1,5 @@
-appId: ai.multica.desktop
-productName: Multica
+appId: vn.proj.taskagent.desktop
+productName: TaskAgent
 directories:
   buildResources: build
 files:
@@ -30,7 +30,7 @@ extraResources:
   - from: ../../NOTICE
     to: NOTICE
 protocols:
-  - name: Multica
+  - name: TaskAgent
     schemes:
       - multica
 asarUnpack:
@@ -44,14 +44,14 @@ mac:
   # `${name}` produces for scoped package names.
   # Naming scheme: multica-desktop-<version>-<platform>-<arch>.<ext>
   # so the filename alone surfaces kind, version, platform, and CPU arch.
-  artifactName: multica-desktop-${version}-mac-${arch}.${ext}
+  artifactName: taskagent-desktop-${version}-mac-${arch}.${ext}
   # Notarize via notarytool. Requires APPLE_ID + APPLE_APP_SPECIFIC_PASSWORD
   # + APPLE_TEAM_ID env vars at package time. Non-mac contributors are
   # unaffected because `pnpm package` already requires the Developer ID
   # signing cert — notarization is a strict superset.
   notarize: true
 dmg:
-  artifactName: multica-desktop-${version}-mac-${arch}.${ext}
+  artifactName: taskagent-desktop-${version}-mac-${arch}.${ext}
 linux:
   # Override the Linux executable name to avoid leaking the scoped npm
   # package name (`@multica/desktop`) into the installed binary, the
@@ -78,7 +78,7 @@ linux:
   # returned nothing rather than "wrong binary" (github.com/multica-ai/multica/issues/5481).
   # `StartupWMClass=Multica` (productName-derived) is unaffected by this
   # rename — it comes from `app.getName()`, not `executableName`.
-  executableName: multica-desktop
+  executableName: taskagent-desktop
   # Pin StartupWMClass to the WM_CLASS Electron emits on X11. Electron
   # derives WM_CLASS from `app.getName()`, which reads the *packaged*
   # ASAR's `package.json` — `productName` if present, otherwise `name`.
@@ -90,13 +90,13 @@ linux:
   # outside this file — `productName: "Multica"` on the source
   # package.json (so the ASAR carries it) and `app.setName("Multica")`
   # in the production branch of `src/main/index.ts` (belt-and-braces).
-  # Keep `StartupWMClass: Multica` pinned here so any future drift in
+  # Keep `StartupWMClass: TaskAgent` pinned here so any future drift in
   # those two anchors shows up as a diff against this declaration.
   # Verification on a real Ubuntu install: `xprop WM_CLASS` on a running
   # window prints `Multica` for both fields.
   desktop:
     entry:
-      StartupWMClass: Multica
+      StartupWMClass: TaskAgent
   # Point at pre-rendered hicolor sizes. electron-builder *can* generate
   # 16/24/32/48/64/128/256/512 from a single build/icon.png, but the
   # auto-generation silently shipped only the 1024×1024 source in our
@@ -108,7 +108,7 @@ linux:
     - AppImage
     - deb
     - rpm
-  artifactName: multica-desktop-${version}-linux-${arch}.${ext}
+  artifactName: taskagent-desktop-${version}-linux-${arch}.${ext}
 rpm:
   # Disable RPM build-id symlinks. Electron apps embed the upstream Electron
   # binary, whose GNU build-id is identical across every app shipping the same
@@ -120,7 +120,7 @@ rpm:
 win:
   target:
     - nsis
-  artifactName: multica-desktop-${version}-windows-${arch}.${ext}
+  artifactName: taskagent-desktop-${version}-windows-${arch}.${ext}
 publish:
   provider: github
   owner: multica-ai

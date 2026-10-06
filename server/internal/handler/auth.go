@@ -363,8 +363,14 @@ func (h *Handler) SendCode(w http.ResponseWriter, r *http.Request) {
 
 	// Rate limit: max 1 code per 60 seconds per email
 	latest, err := h.Queries.GetLatestCodeByEmail(r.Context(), email)
-	if err == nil && time.Since(latest.CreatedAt.Time) < 60*time.Second {
-		writeError(w, http.StatusTooManyRequests, "please wait before requesting another code")
+	if err == nil && time.Since(latest.CreatedAt.Time) < time.Minute {
+		remaining := time.Minute - time.Since(latest.CreatedAt.Time)
+		retryAfterSeconds := int((remaining + time.Second - 1) / time.Second)
+		if retryAfterSeconds < 1 {
+			retryAfterSeconds = 1
+		}
+		w.Header().Set("Retry-After", fmt.Sprintf("%d", retryAfterSeconds))
+		writeError(w, http.StatusTooManyRequests, fmt.Sprintf("please wait %d seconds before requesting another code", retryAfterSeconds))
 		return
 	}
 

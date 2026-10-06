@@ -224,6 +224,8 @@ type Handler struct {
 	SeatCapacityLocker    seatcapacity.WorkspaceLocker
 	SeatCapacityWorker    *seatcapacity.Worker
 	EmailService          *service.EmailService
+	EmailSettingsBox      *secretbox.Box
+	InstanceAdminEmails   map[string]struct{}
 	UpdateStore           UpdateStore
 	ModelListStore        ModelListStore
 	LocalSkillListStore   LocalSkillListStore

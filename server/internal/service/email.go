@@ -11,6 +11,7 @@ import (
 	"net/smtp"
 	"os"
 	"strings"
+	"sync"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -24,6 +25,7 @@ import (
 const maxSubjectFieldRunes = 60
 
 type EmailService struct {
+	mu              sync.RWMutex
 	client          *resend.Client
 	fromEmail       string
 	smtpHost        string
@@ -33,6 +35,55 @@ type EmailService struct {
 	smtpTLSInsecure bool
 	smtpTLSImplicit bool
 	smtpEHLOName    string
+}
+
+type EmailConfig struct {
+	ResendAPIKey    string
+	FromEmail       string
+	SMTPHost        string
+	SMTPPort        string
+	SMTPUsername    string
+	SMTPPassword    string
+	SMTPTLSInsecure bool
+	SMTPTLSImplicit bool
+	SMTPEHLOName    string
+}
+
+func (s *EmailService) ApplyConfig(cfg EmailConfig) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.applyConfigLocked(cfg)
+}
+
+func (s *EmailService) applyConfigLocked(cfg EmailConfig) {
+	s.client = nil
+	if cfg.ResendAPIKey != "" {
+		s.client = resend.NewClient(cfg.ResendAPIKey)
+	}
+	s.fromEmail = cfg.FromEmail
+	s.smtpHost = cfg.SMTPHost
+	s.smtpPort = cfg.SMTPPort
+	s.smtpUsername = cfg.SMTPUsername
+	s.smtpPassword = cfg.SMTPPassword
+	s.smtpTLSInsecure = cfg.SMTPTLSInsecure
+	s.smtpTLSImplicit = cfg.SMTPTLSImplicit
+	s.smtpEHLOName = cfg.SMTPEHLOName
+}
+
+func (s *EmailService) snapshot() *EmailService {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return &EmailService{
+		client:          s.client,
+		fromEmail:       s.fromEmail,
+		smtpHost:        s.smtpHost,
+		smtpPort:        s.smtpPort,
+		smtpUsername:    s.smtpUsername,
+		smtpPassword:    s.smtpPassword,
+		smtpTLSInsecure: s.smtpTLSInsecure,
+		smtpTLSImplicit: s.smtpTLSImplicit,
+		smtpEHLOName:    s.smtpEHLOName,
+	}
 }
 
 type smtpAuthClient interface {
@@ -338,6 +389,7 @@ func (s *EmailService) sendSMTP(to, subject, htmlBody string) error {
 // (6-digit numeric) so no user-controlled text reaches the email body here.
 // Delivery priority: SMTP relay → Resend API → DEV stdout.
 func (s *EmailService) SendVerificationCode(to, code string) error {
+	s = s.snapshot()
 	body := fmt.Sprintf(
 		`<div style="font-family: sans-serif; max-width: 400px; margin: 0 auto;">
 			<h2>Your verification code</h2>
@@ -363,9 +415,22 @@ func (s *EmailService) SendVerificationCode(to, code string) error {
 	return err
 }
 
+func (s *EmailService) SendTestEmail(to string) error {
+	s = s.snapshot()
+	if s.smtpHost == "" {
+		return fmt.Errorf("smtp is not configured")
+	}
+	body := `<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+		<h2>TaskAgent email settings test</h2>
+		<p>The SMTP server accepted this test message.</p>
+	</div>`
+	return s.sendSMTP(to, "TaskAgent email settings test", body)
+}
+
 // SendInvitationEmail notifies the invitee that they have been invited to a workspace.
 // invitationID is included in the URL so the email deep-links to /invite/{id}.
 func (s *EmailService) SendInvitationEmail(to, inviterName, workspaceName, invitationID string) error {
+	s = s.snapshot()
 	appURL := strings.TrimSpace(os.Getenv("FRONTEND_ORIGIN"))
 	if appURL == "" {
 		appURL = "https://multica.ai"

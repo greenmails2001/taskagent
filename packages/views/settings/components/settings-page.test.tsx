@@ -30,6 +30,7 @@ vi.mock("./keyboard-shortcuts-tab", stub("KeyboardShortcutsTab"));
 vi.mock("./plugins-tab", stub("PluginsTab"));
 vi.mock("./mcp-tab", stub("McpTab"));
 vi.mock("./billing-tab", stub("BillingTab"));
+vi.mock("./email-settings-tab", stub("EmailSettingsTab"));
 
 const shell = vi.hoisted(() => ({
   appsAvailable: false,

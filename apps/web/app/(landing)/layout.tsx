@@ -19,13 +19,13 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "Organization",
-      name: "Multica",
-      url: "https://www.multica.ai",
+      name: "TaskAgent",
+      url: "https://taskagent.proj.vn",
       sameAs: ["https://github.com/multica-ai/multica"],
     },
     {
       "@type": "SoftwareApplication",
-      name: "Multica",
+      name: "TaskAgent",
       applicationCategory: "ProjectManagement",
       operatingSystem: "Web",
       description:

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, type ReactNode } from "react";
+import { Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Card,
@@ -114,6 +115,9 @@ export function LoginPage({
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [postVerifyState, setPostVerifyState] = useState<
+    "idle" | "loading_workspace" | "workspace_error"
+  >("idle");
   const [cooldown, setCooldown] = useState(0);
   const [existingUser, setExistingUser] = useState<User | null>(null);
   // Tracks how the existing session was detected so handleCliAuthorize
@@ -200,9 +204,24 @@ export function LoginPage({
     [email, t],
   );
 
+  const finishWebLogin = useCallback(async () => {
+    setPostVerifyState("loading_workspace");
+    setLoading(true);
+    setError("");
+    try {
+      const wsList = await api.listWorkspaces();
+      qc.setQueryData(workspaceKeys.list(), wsList);
+      onTokenObtained?.();
+      onSuccess();
+    } catch {
+      setPostVerifyState("workspace_error");
+      setLoading(false);
+    }
+  }, [onSuccess, onTokenObtained, qc]);
+
   const handleVerify = useCallback(
     async (value: string) => {
-      if (value.length !== 6) return;
+      if (value.length !== 6 || postVerifyState !== "idle") return;
       setLoading(true);
       setError("");
       try {
@@ -216,15 +235,8 @@ export function LoginPage({
           return;
         }
 
-        // Normal path: seed the workspace list into the Query cache so the
-        // caller's onSuccess can read it synchronously to compute a destination
-        // URL (first workspace's slug, or /workspaces/new for zero-workspace
-        // users).
         await useAuthStore.getState().verifyCode(email, value);
-        const wsList = await api.listWorkspaces();
-        qc.setQueryData(workspaceKeys.list(), wsList);
-        onTokenObtained?.();
-        onSuccess();
+        await finishWebLogin();
       } catch (err) {
         setError(
           err instanceof Error
@@ -235,7 +247,7 @@ export function LoginPage({
         setLoading(false);
       }
     },
-    [email, onSuccess, cliCallback, onTokenObtained, qc, t],
+    [email, cliCallback, onTokenObtained, postVerifyState, finishWebLogin, t],
   );
 
   const handleResend = async () => {
@@ -359,6 +371,33 @@ export function LoginPage({
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
+            {postVerifyState !== "idle" ? (
+              <div className="flex w-full flex-col items-center gap-3 py-3 text-center">
+                {postVerifyState === "loading_workspace" ? (
+                  <>
+                    <Loader2 className="size-6 animate-spin text-primary" aria-hidden="true" />
+                    <div>
+                      <p className="text-body font-medium">Sign-in successful</p>
+                      <p className="mt-1 text-caption text-muted-foreground">
+                        Loading your workspace. You do not need another verification code.
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Alert>
+                      <AlertDescription>
+                        Sign-in succeeded, but the workspace could not be loaded. Your verification code has already been accepted.
+                      </AlertDescription>
+                    </Alert>
+                    <Button type="button" className="w-full" onClick={() => void finishWebLogin()}>
+                      Retry loading workspace
+                    </Button>
+                  </>
+                )}
+              </div>
+            ) : (
+              <>
             <InputOTP
               autoFocus
               maxLength={6}
@@ -393,8 +432,10 @@ export function LoginPage({
                   : t(($) => $.verify.resend)}
               </button>
             </div>
+              </>
+            )}
           </CardContent>
-          <CardFooter>
+          {postVerifyState === "idle" && <CardFooter>
             <Button
               type="button"
               variant="ghost"
@@ -407,7 +448,7 @@ export function LoginPage({
             >
               {t(($) => $.common.back)}
             </Button>
-          </CardFooter>
+          </CardFooter>}
         </Card>
       </div>
     );

@@ -56,6 +56,19 @@ type Agent struct {
 	ConversationStarters  []byte      `json:"conversation_starters"`
 }
 
+type AgentAiConfiguration struct {
+	AgentID           pgtype.UUID        `json:"agent_id"`
+	WorkspaceID       pgtype.UUID        `json:"workspace_id"`
+	RuntimeID         pgtype.UUID        `json:"runtime_id"`
+	AiProviderID      pgtype.UUID        `json:"ai_provider_id"`
+	CredentialMode    string             `json:"credential_mode"`
+	ProviderAccountID pgtype.UUID        `json:"provider_account_id"`
+	ProviderModelID   pgtype.UUID        `json:"provider_model_id"`
+	EffortKey         pgtype.Text        `json:"effort_key"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+}
+
 type AgentBuilderDraft struct {
 	ChatSessionID pgtype.UUID        `json:"chat_session_id"`
 	WorkspaceID   pgtype.UUID        `json:"workspace_id"`
@@ -184,6 +197,32 @@ type AgentToLabel struct {
 	AgentID   pgtype.UUID        `json:"agent_id"`
 	LabelID   pgtype.UUID        `json:"label_id"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+type AiProvider struct {
+	ID             pgtype.UUID        `json:"id"`
+	ProviderKey    string             `json:"provider_key"`
+	DisplayName    string             `json:"display_name"`
+	Protocol       string             `json:"protocol"`
+	DefaultBaseUrl pgtype.Text        `json:"default_base_url"`
+	CredentialMode string             `json:"credential_mode"`
+	Enabled        bool               `json:"enabled"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+}
+
+type AiProviderAccount struct {
+	ID              pgtype.UUID        `json:"id"`
+	WorkspaceID     pgtype.UUID        `json:"workspace_id"`
+	AiProviderID    pgtype.UUID        `json:"ai_provider_id"`
+	OwnerUserID     pgtype.UUID        `json:"owner_user_id"`
+	DisplayName     string             `json:"display_name"`
+	BaseUrl         pgtype.Text        `json:"base_url"`
+	SecretEnvKey    string             `json:"secret_env_key"`
+	Status          string             `json:"status"`
+	LastValidatedAt pgtype.Timestamptz `json:"last_validated_at"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
 }
 
 type Attachment struct {
@@ -1327,6 +1366,24 @@ type ProjectResource struct {
 	CreatedBy    pgtype.UUID        `json:"created_by"`
 }
 
+type ProviderModel struct {
+	ID           pgtype.UUID        `json:"id"`
+	AiProviderID pgtype.UUID        `json:"ai_provider_id"`
+	ModelKey     string             `json:"model_key"`
+	DisplayName  string             `json:"display_name"`
+	Enabled      bool               `json:"enabled"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
+type ProviderModelEffort struct {
+	ProviderModelID pgtype.UUID `json:"provider_model_id"`
+	EffortKey       string      `json:"effort_key"`
+	DisplayName     string      `json:"display_name"`
+	SortOrder       int32       `json:"sort_order"`
+	Enabled         bool        `json:"enabled"`
+}
+
 type QuickAction struct {
 	ID            pgtype.UUID        `json:"id"`
 	WorkspaceID   pgtype.UUID        `json:"workspace_id"`
@@ -1372,6 +1429,13 @@ type SearchIndexChange struct {
 type SearchIndexPruneMark struct {
 	Singleton        bool          `json:"singleton"`
 	PrunedThroughXid pgtype.Uint64 `json:"pruned_through_xid"`
+}
+
+type RuntimeProviderCompatibility struct {
+	RuntimeProvider string      `json:"runtime_provider"`
+	AiProviderID    pgtype.UUID `json:"ai_provider_id"`
+	Transport       string      `json:"transport"`
+	Enabled         bool        `json:"enabled"`
 }
 
 type SeatCapacityOutbox struct {

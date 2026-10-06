@@ -2228,6 +2228,16 @@ func TestSendCodeRateLimit(t *testing.T) {
 	if w.Code != http.StatusTooManyRequests {
 		t.Fatalf("SendCode (second): expected 429, got %d: %s", w.Code, w.Body.String())
 	}
+	if got := w.Header().Get("Retry-After"); got == "" {
+		t.Fatal("SendCode (second): expected Retry-After header")
+	}
+	var rateLimitResp map[string]string
+	if err := json.NewDecoder(w.Body).Decode(&rateLimitResp); err != nil {
+		t.Fatalf("SendCode (second): decode response: %v", err)
+	}
+	if !strings.Contains(rateLimitResp["error"], "seconds") {
+		t.Fatalf("SendCode (second): expected remaining seconds in error, got %q", rateLimitResp["error"])
+	}
 }
 
 func TestVerifyCode(t *testing.T) {

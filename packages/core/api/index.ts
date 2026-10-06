@@ -11,6 +11,8 @@ export type {
   ApiClientOptions,
   ClientRuntimeSnapshot,
   ClientUsageRequest,
+  InstanceEmailSettings,
+  UpdateInstanceEmailSettingsRequest,
 } from "./client";
 export { parseWithFallback, setSchemaLogger } from "./schema";
 export type { ParseOptions } from "./schema";

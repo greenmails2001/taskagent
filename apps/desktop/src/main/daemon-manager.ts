@@ -54,7 +54,7 @@ import {
 } from "./daemon-auth-probe";
 
 const POLL_INTERVAL_MS = 5_000;
-const PREFS_PATH = join(homedir(), ".multica", "desktop_prefs.json");
+const PREFS_PATH = join(homedir(), ".taskagent", "desktop_prefs.json");
 const LOG_TAIL_RETRY_MS = 2_000;
 const LOG_TAIL_MAX_RETRIES = 5;
 // How long a start may sit in "starting" (with no /health) before we probe the
@@ -657,7 +657,7 @@ async function mintPat(jwt: string): Promise<string> {
       Authorization: `Bearer ${jwt}`,
     },
     // Omit expires_in_days → server treats as null → non-expiring PAT.
-    body: JSON.stringify({ name: "Multica Desktop" }),
+    body: JSON.stringify({ name: "TaskAgent Desktop" }),
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
@@ -773,7 +773,7 @@ async function loadPrefs(): Promise<DaemonPrefs> {
 }
 
 async function savePrefs(prefs: DaemonPrefs): Promise<void> {
-  const dir = join(homedir(), ".multica");
+  const dir = join(homedir(), ".taskagent");
   await mkdir(dir, { recursive: true });
   await writeFile(PREFS_PATH, JSON.stringify(prefs, null, 2), "utf-8");
 }

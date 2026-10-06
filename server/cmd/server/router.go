@@ -446,6 +446,15 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 		ServerVersion:            normalizeServerVersion(version),
 	}
 	h := handler.New(queries, pool, hub, bus, emailSvc, store, cfSigner, analyticsClient, signupConfig, daemonHub)
+	h.InstanceAdminEmails = handler.ParseInstanceAdminEmails(os.Getenv("MULTICA_INSTANCE_ADMIN_EMAILS"))
+	if box, err := handler.NewEmailSettingsBoxFromEnv(); err != nil {
+		slog.Warn("encrypted email settings disabled", "error", err)
+	} else {
+		h.EmailSettingsBox = box
+		if err := h.LoadInstanceEmailSettings(context.Background()); err != nil {
+			slog.Error("failed to load database email settings; environment fallback remains active", "error", err)
+		}
+	}
 	invitationRateLimits := handler.DefaultInvitationRateLimits()
 	invitationRateLimits.Actor.Limit = envNonNegativeInt("RATE_LIMIT_INVITATION_ACTOR_10M", invitationRateLimits.Actor.Limit)
 	invitationRateLimits.Workspace.Limit = envNonNegativeInt("RATE_LIMIT_INVITATION_WORKSPACE_24H", invitationRateLimits.Workspace.Limit)
@@ -1667,6 +1676,9 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 		// string (Desktop, mobile). Browsers get theirs re-issued inline by
 		// middleware.Auth and never call this (MUL-7436).
 		r.Post("/api/auth/refresh", h.RefreshSession)
+		r.Get("/api/admin/email-settings", h.GetInstanceEmailSettings)
+		r.Put("/api/admin/email-settings", h.UpdateInstanceEmailSettings)
+		r.Post("/api/admin/email-settings/test", h.TestInstanceEmailSettings)
 		r.Post("/api/upload-file", h.UploadFile)
 		r.Post("/api/feedback", h.CreateFeedback)
 		r.With(handler.RequireHumanActor).Post("/api/client-usage", h.UpsertClientUsage)
@@ -1716,6 +1728,10 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 					// are admin-gated below).
 					r.Get("/runtime-profiles", h.ListRuntimeProfiles)
 					r.Get("/runtime-profiles/{profileId}", h.GetRuntimeProfile)
+					r.Get("/ai-providers/compatible/{runtimeProvider}", h.ListCompatibleAIProviders)
+					r.Get("/ai-providers/{providerId}/accounts", h.ListAIProviderAccounts)
+					r.Get("/ai-providers/{providerId}/models", h.ListAIProviderModels)
+					r.Get("/ai-providers/{providerId}/models/{modelId}/efforts", h.ListAIProviderModelEfforts)
 					// The workspace MCP library — member-visible so an agent
 					// owner can see what is available to add to their agent.
 					// The payload is names and transports only; the stored
@@ -2244,6 +2260,8 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 				r.Route("/{id}", func(r chi.Router) {
 					r.Get("/", h.GetAgent)
 					r.Put("/", h.UpdateAgent)
+					r.Get("/ai-configuration", h.GetAgentAIConfiguration)
+					r.Put("/ai-configuration", h.UpdateAgentAIConfiguration)
 					r.Post("/archive", h.ArchiveAgent)
 					r.Post("/restore", h.RestoreAgent)
 					r.Post("/cancel-tasks", h.CancelAgentTasks)

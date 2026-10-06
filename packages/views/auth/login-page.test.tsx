@@ -305,6 +305,45 @@ describe("LoginPage", () => {
     });
   });
 
+  it("shows an authenticated loading state while the workspace route is loading", async () => {
+    mockSendCode.mockResolvedValueOnce(undefined);
+    mockVerifyCode.mockResolvedValueOnce(undefined);
+    mockApiListWorkspaces.mockReturnValueOnce(new Promise(() => {}));
+
+    renderWithI18n(<LoginPage onSuccess={onSuccess} />);
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText(/email/i), "test@example.com");
+    await user.click(screen.getByRole("button", { name: /continue/i }));
+    await user.type(getOTPInput(), "123456");
+
+    expect(await screen.findByText("Sign-in successful")).toBeInTheDocument();
+    expect(screen.getByText(/do not need another verification code/i)).toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { hidden: true })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /resend/i })).not.toBeInTheDocument();
+  });
+
+  it("retries workspace loading without verifying the consumed code again", async () => {
+    mockSendCode.mockResolvedValueOnce(undefined);
+    mockVerifyCode.mockResolvedValueOnce(undefined);
+    mockApiListWorkspaces
+      .mockRejectedValueOnce(new Error("route compiling"))
+      .mockResolvedValueOnce([{ id: "ws-1" }]);
+
+    renderWithI18n(<LoginPage onSuccess={onSuccess} />);
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText(/email/i), "test@example.com");
+    await user.click(screen.getByRole("button", { name: /continue/i }));
+    await user.type(getOTPInput(), "123456");
+
+    const retry = await screen.findByRole("button", { name: "Retry loading workspace" });
+    expect(screen.getByText(/verification code has already been accepted/i)).toBeInTheDocument();
+    await user.click(retry);
+
+    await waitFor(() => expect(onSuccess).toHaveBeenCalled());
+    expect(mockVerifyCode).toHaveBeenCalledTimes(1);
+    expect(mockApiListWorkspaces).toHaveBeenCalledTimes(2);
+  });
+
   it("shows error on invalid code", async () => {
     mockSendCode.mockResolvedValueOnce(undefined);
     mockVerifyCode.mockRejectedValueOnce(new Error("Invalid code"));
