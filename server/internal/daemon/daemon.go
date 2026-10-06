@@ -4859,7 +4859,12 @@ func (d *Daemon) handleModelList(ctx context.Context, rt Runtime, requestID stri
 		// Additive field: the models are still worth rendering, but the server
 		// must not persist them as this runtime's real catalog (MUL-5549).
 		// Older servers ignore it and keep the previous behaviour.
-		"fallback": catalog.Fallback,
+		"fallback":                 catalog.Fallback,
+		"upstream_provider":        catalog.UpstreamProvider,
+		"upstream_provider_name":   catalog.UpstreamProviderName,
+		"catalog_source":           catalog.CatalogSource,
+		"effective_default_model":  catalog.EffectiveDefaultModel,
+		"effective_default_effort": catalog.EffectiveDefaultEffort,
 	})
 }
 

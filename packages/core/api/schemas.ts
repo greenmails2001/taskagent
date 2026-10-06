@@ -3199,6 +3199,11 @@ export const RuntimeModelListRequestSchema = z.object({
   updated_at: z.string().default(""),
   cached: z.boolean().optional(),
   cached_at: z.string().optional(),
+  upstream_provider: z.string().optional(),
+  upstream_provider_name: z.string().optional(),
+  catalog_source: z.string().optional(),
+  effective_default_model: z.string().optional(),
+  effective_default_effort: z.string().optional(),
 }).loose();
 
 // Fallback for an unparseable model-discovery response. `failed` is the only

@@ -76,8 +76,21 @@ type ModelListRequest struct {
 	// snapshot's capture time for clients that want to surface freshness.
 	// Neither field is ever persisted in the request store; they only exist on
 	// the synthetic cache-hit response.
-	Cached   bool       `json:"cached,omitempty"`
-	CachedAt *time.Time `json:"cached_at,omitempty"`
+	Cached                 bool       `json:"cached,omitempty"`
+	CachedAt               *time.Time `json:"cached_at,omitempty"`
+	UpstreamProvider       string     `json:"upstream_provider,omitempty"`
+	UpstreamProviderName   string     `json:"upstream_provider_name,omitempty"`
+	CatalogSource          string     `json:"catalog_source,omitempty"`
+	EffectiveDefaultModel  string     `json:"effective_default_model,omitempty"`
+	EffectiveDefaultEffort string     `json:"effective_default_effort,omitempty"`
+}
+
+type ModelCatalogMetadata struct {
+	UpstreamProvider       string
+	UpstreamProviderName   string
+	CatalogSource          string
+	EffectiveDefaultModel  string
+	EffectiveDefaultEffort string
 }
 
 // ModelEntry mirrors agent.Model for the wire. `Default` tags the
@@ -177,7 +190,7 @@ type ModelListStore interface {
 	// PopPending handles "queue empty after probe" by returning nil.
 	HasPending(ctx context.Context, runtimeID string) (bool, error)
 	PopPending(ctx context.Context, runtimeID string) (*ModelListRequest, error)
-	Complete(ctx context.Context, id string, models []ModelEntry, unavailable []UnavailableModelEntry, supported bool) error
+	Complete(ctx context.Context, id string, models []ModelEntry, unavailable []UnavailableModelEntry, supported bool, metadata ModelCatalogMetadata) error
 	Fail(ctx context.Context, id string, errMsg string) error
 }
 
@@ -295,7 +308,7 @@ func (s *InMemoryModelListStore) PopPending(_ context.Context, runtimeID string)
 	return oldest, nil
 }
 
-func (s *InMemoryModelListStore) Complete(_ context.Context, id string, models []ModelEntry, unavailable []UnavailableModelEntry, supported bool) error {
+func (s *InMemoryModelListStore) Complete(_ context.Context, id string, models []ModelEntry, unavailable []UnavailableModelEntry, supported bool, metadata ModelCatalogMetadata) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -304,6 +317,11 @@ func (s *InMemoryModelListStore) Complete(_ context.Context, id string, models [
 		req.Models = models
 		req.UnavailableModels = unavailable
 		req.Supported = supported
+		req.UpstreamProvider = metadata.UpstreamProvider
+		req.UpstreamProviderName = metadata.UpstreamProviderName
+		req.CatalogSource = metadata.CatalogSource
+		req.EffectiveDefaultModel = metadata.EffectiveDefaultModel
+		req.EffectiveDefaultEffort = metadata.EffectiveDefaultEffort
 		req.UpdatedAt = time.Now()
 	}
 	return nil
@@ -518,7 +536,12 @@ func (h *Handler) ReportModelListResult(w http.ResponseWriter, r *http.Request) 
 		// stand-in the provider substituted after discovery failed, not the
 		// runtime's real catalog. Older daemons omit it; absent means "this
 		// daemon cannot tell us", which stays the pre-MUL-5549 behaviour.
-		Fallback bool `json:"fallback"`
+		Fallback               bool   `json:"fallback"`
+		UpstreamProvider       string `json:"upstream_provider"`
+		UpstreamProviderName   string `json:"upstream_provider_name"`
+		CatalogSource          string `json:"catalog_source"`
+		EffectiveDefaultModel  string `json:"effective_default_model"`
+		EffectiveDefaultEffort string `json:"effective_default_effort"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
@@ -532,7 +555,14 @@ func (h *Handler) ReportModelListResult(w http.ResponseWriter, r *http.Request) 
 		if body.Supported != nil {
 			supported = *body.Supported
 		}
-		if err := h.ModelListStore.Complete(r.Context(), requestID, body.Models, body.UnavailableModels, supported); err != nil {
+		metadata := ModelCatalogMetadata{
+			UpstreamProvider:       body.UpstreamProvider,
+			UpstreamProviderName:   body.UpstreamProviderName,
+			CatalogSource:          body.CatalogSource,
+			EffectiveDefaultModel:  body.EffectiveDefaultModel,
+			EffectiveDefaultEffort: body.EffectiveDefaultEffort,
+		}
+		if err := h.ModelListStore.Complete(r.Context(), requestID, body.Models, body.UnavailableModels, supported, metadata); err != nil {
 			// Surface the store failure as 5xx so the daemon can retry instead
 			// of swallowing the report (leaves the request stuck in running
 			// until the server-side timeout, which is exactly the "looks OK

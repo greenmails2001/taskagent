@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import type {
   Agent,
   AgentRuntime,
@@ -11,7 +12,10 @@ import {
   AGENT_MAX_CONCURRENT_TASKS_MAX,
   AGENT_MAX_CONCURRENT_TASKS_MIN,
 } from "@multica/core/agents";
-import { isRuntimeUsableForUser } from "@multica/core/runtimes";
+import {
+  isRuntimeUsableForUser,
+  runtimeModelsOptions,
+} from "@multica/core/runtimes";
 import { isImeComposing } from "@multica/core/utils";
 import { Input } from "@multica/ui/components/ui/input";
 import { Textarea } from "@multica/ui/components/ui/textarea";
@@ -25,8 +29,14 @@ import {
 import { useAutoSave } from "../../settings/components/use-auto-save";
 import { useT } from "../../i18n";
 import { CharCounter } from "./char-counter";
+import { ModelPicker } from "./inspector/model-picker";
+import {
+  buildModelChangeUpdate,
+  type ModelCatalog,
+} from "./inspector/model-change-cleanup";
 import { RuntimePicker } from "./inspector/runtime-picker";
-import { AIProviderModelField } from "./inspector/ai-provider-model-field";
+import { ThinkingSettingField } from "./inspector/thinking-prop-row";
+import { ServiceTierSettingField } from "./inspector/service-tier-setting-field";
 
 interface InspectorProps {
   agent: Agent;
@@ -107,9 +117,39 @@ export function AgentDetailInspector({
     isEqual: profileDraftsEqual,
   });
 
+  const isOnline = runtime?.status === "online";
   const canReadRuntime =
     runtime != null && isRuntimeUsableForUser(runtime, currentUserId);
+  const canDiscoverRuntimeModels = isOnline && canReadRuntime;
   const nameInvalid = name.trim().length === 0;
+
+  // Runtime discovery is authoritative. Empty agent fields continue to mean
+  // "inherit the runtime default" rather than selecting a seeded DB model.
+  const modelsQuery = useQuery(
+    runtimeModelsOptions(canDiscoverRuntimeModels ? agent.runtime_id : null),
+  );
+  const modelCatalog = useMemo<ModelCatalog>(
+    () =>
+      modelsQuery.isSuccess
+        ? modelsQuery.data.supported
+          ? modelsQuery.data.models
+          : []
+        : null,
+    [modelsQuery.data, modelsQuery.isSuccess],
+  );
+  const handleModelChange = useCallback(
+    (model: string) =>
+      update(
+        buildModelChangeUpdate({
+          provider: runtime?.provider ?? "",
+          model,
+          thinkingLevel: agent.thinking_level ?? "",
+          serviceTier: agent.service_tier ?? "",
+          catalog: modelCatalog,
+        }),
+      ),
+    [agent.service_tier, agent.thinking_level, modelCatalog, runtime?.provider, update],
+  );
 
   return (
     <div className="space-y-8">
@@ -125,9 +165,6 @@ export function AgentDetailInspector({
         }
       >
         <SettingsCard>
-          <SettingsRow label="Provider and model" size="none" align="start">
-            <AIProviderModelField agent={agent} runtime={runtime} canEdit={canEdit} />
-          </SettingsRow>
           <SettingsRow
             label={t(($) => $.inspector.avatar_label)}
             size="none"
@@ -212,7 +249,7 @@ export function AgentDetailInspector({
               runtimes={runtimes}
               members={members}
               currentUserId={currentUserId}
-              canEdit={canEdit && canReadRuntime}
+              canEdit={canEdit}
               // Model, thinking level, and service tier are runtime/model
               // native. Clear them together so the new runtime resolves its
               // own defaults instead of inheriting incompatible tokens.
@@ -226,6 +263,42 @@ export function AgentDetailInspector({
               }
             />
           </SettingsRow>
+          <SettingsRow
+            label={t(($) => $.inspector.prop_model)}
+            size="select-wide"
+          >
+            <ModelPicker
+              variant="field"
+              showLabel={false}
+              runtimeId={agent.runtime_id}
+              runtimeOnline={canDiscoverRuntimeModels}
+              value={agent.model ?? ""}
+              canEdit={canEdit}
+              onChange={handleModelChange}
+            />
+          </SettingsRow>
+          <ThinkingSettingField
+            label={t(($) => $.inspector.prop_thinking)}
+            runtimeId={agent.runtime_id}
+            runtimeOnline={canDiscoverRuntimeModels}
+            provider={runtime?.provider ?? ""}
+            model={agent.model ?? ""}
+            value={agent.thinking_level ?? ""}
+            canEdit={canEdit}
+            onChange={(thinkingLevel) =>
+              update({ thinking_level: thinkingLevel })
+            }
+          />
+          <ServiceTierSettingField
+            label={t(($) => $.inspector.prop_speed)}
+            runtimeId={agent.runtime_id}
+            runtimeOnline={canDiscoverRuntimeModels}
+            provider={runtime?.provider ?? ""}
+            model={agent.model ?? ""}
+            value={agent.service_tier ?? ""}
+            canEdit={canEdit}
+            onChange={(serviceTier) => update({ service_tier: serviceTier })}
+          />
           <SettingsRow
             label={t(($) => $.inspector.prop_concurrency)}
             size="select-wide"

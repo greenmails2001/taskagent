@@ -89,7 +89,7 @@ func TestReportModelListResult_PreservesDefault(t *testing.T) {
 	if err := json.Unmarshal(raw, &parsed); err != nil {
 		t.Fatalf("unmarshal report body: %v", err)
 	}
-	if err := store.Complete(ctx, req.ID, parsed.Models, nil, true); err != nil {
+	if err := store.Complete(ctx, req.ID, parsed.Models, nil, true, ModelCatalogMetadata{}); err != nil {
 		t.Fatalf("complete: %v", err)
 	}
 

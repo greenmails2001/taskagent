@@ -121,6 +121,28 @@ describe("resolveRuntimeModels", () => {
     expect(result.unavailableModels).toEqual([]);
   });
 
+  it("preserves non-secret runtime provider defaults for the inspector", async () => {
+    initiateListModels.mockResolvedValue(
+      request({
+        status: "completed",
+        models: catalog,
+        upstream_provider: "9router",
+        upstream_provider_name: "9Route",
+        catalog_source: "provider_api",
+        effective_default_model: "cx/gpt-6.1-sol",
+        effective_default_effort: "low",
+      }),
+    );
+
+    await expect(resolveRuntimeModels("rt-1")).resolves.toMatchObject({
+      upstreamProvider: "9router",
+      upstreamProviderName: "9Route",
+      catalogSource: "provider_api",
+      effectiveDefaultModel: "cx/gpt-6.1-sol",
+      effectiveDefaultEffort: "low",
+    });
+  });
+
   it("marks a live discovery as not cached", async () => {
     initiateListModels.mockResolvedValue(
       request({ status: "completed", models: catalog }),

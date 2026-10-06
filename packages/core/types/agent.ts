@@ -1283,6 +1283,11 @@ export interface RuntimeModelListRequest {
    */
   cached?: boolean;
   cached_at?: string;
+  upstream_provider?: string;
+  upstream_provider_name?: string;
+  catalog_source?: string;
+  effective_default_model?: string;
+  effective_default_effort?: string;
 }
 
 // Result shape returned by resolveRuntimeModels — includes the
@@ -1298,6 +1303,11 @@ export interface RuntimeModelsResult {
    */
   unavailableModels?: RuntimeUnavailableModel[];
   supported: boolean;
+  upstreamProvider?: string;
+  upstreamProviderName?: string;
+  catalogSource?: string;
+  effectiveDefaultModel?: string;
+  effectiveDefaultEffort?: string;
   /**
    * True when the server answered from its catalog cache rather than a live
    * daemon round trip (MUL-5444). Drives the query's freshness policy: a

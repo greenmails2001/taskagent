@@ -1743,6 +1743,26 @@ describe("RuntimeModelListRequestSchema", () => {
     expect(parsed.cached_at).toBe("2026-07-29T00:00:00Z");
   });
 
+  it("keeps additive non-secret runtime provider metadata", () => {
+    const parsed = parseWithFallback(
+      {
+        ...completed,
+        upstream_provider: "9router",
+        upstream_provider_name: "9Route",
+        catalog_source: "provider_api",
+        effective_default_model: "cx/gpt-6.1-sol",
+        effective_default_effort: "low",
+      },
+      RuntimeModelListRequestSchema,
+      MALFORMED_RUNTIME_MODEL_LIST_REQUEST,
+      { endpoint: "test" },
+    );
+    expect(parsed.upstream_provider).toBe("9router");
+    expect(parsed.catalog_source).toBe("provider_api");
+    expect(parsed.effective_default_model).toBe("cx/gpt-6.1-sol");
+    expect(parsed.effective_default_effort).toBe("low");
+  });
+
   // A backend that predates MUL-5444 sends neither marker; an even older one
   // may omit `supported`. Both must stay usable rather than reading as
   // "runtime manages the model itself" off an undefined.

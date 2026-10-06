@@ -71,4 +71,22 @@ describe("AgentDetailInspector labels", () => {
     expect(screen.queryByTestId("resource-label-picker")).toBeNull();
     expect(screen.queryByText("Labels")).toBeNull();
   });
+
+  it("uses the runtime-discovered model, thinking, and service-tier controls", () => {
+    renderWithI18n(
+      <AgentDetailInspector
+        agent={agent}
+        runtime={null}
+        runtimes={[]}
+        members={[]}
+        currentUserId="user-1"
+        canEdit
+        onUpdate={vi.fn(async () => {})}
+      />,
+    );
+
+    expect(screen.getByTestId("model-picker")).toBeInTheDocument();
+    expect(screen.getByTestId("thinking-field")).toBeInTheDocument();
+    expect(screen.getByTestId("service-tier-field")).toBeInTheDocument();
+  });
 });

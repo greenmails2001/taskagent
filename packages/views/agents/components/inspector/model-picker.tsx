@@ -85,7 +85,16 @@ export function ModelPicker({
   );
   const canCreate = trimmedSearch.length > 0 && !exactMatch;
 
-  const triggerLabel = value || t(($) => $.pickers.model_default);
+  const effectiveDefaultModel =
+    modelsQuery.data?.effectiveDefaultModel ??
+    models.find((model) => model.default)?.id;
+  const effectiveProvider =
+    modelsQuery.data?.upstreamProviderName ?? models[0]?.provider;
+  const triggerLabel =
+    value ||
+    (effectiveDefaultModel
+      ? `${effectiveDefaultModel} (${t(($) => $.pickers.model_default)})`
+      : t(($) => $.pickers.model_default));
   const triggerTitle = t(($) => $.pickers.model_tooltip, { value: triggerLabel });
 
   const select = async (id: string) => {
@@ -292,11 +301,21 @@ export function ModelPicker({
   );
 
   if (variant === "field") {
-    if (!showLabel) return picker;
+    const fieldPicker = effectiveProvider ? (
+      <div className="min-w-0">
+        {picker}
+        <div className="mt-1 truncate text-micro text-muted-foreground">
+          {effectiveProvider}
+        </div>
+      </div>
+    ) : (
+      picker
+    );
+    if (!showLabel) return fieldPicker;
     return (
       <div className="flex min-w-0 flex-col">
         <Label>{t(($) => $.inspector.prop_model)}</Label>
-        {picker}
+        {fieldPicker}
       </div>
     );
   }

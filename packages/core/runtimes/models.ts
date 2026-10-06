@@ -99,6 +99,21 @@ export async function resolveRuntimeModels(
     supported: current.supported !== false,
     cached: current.cached === true,
     cachedAt: current.cached_at,
+    ...(current.upstream_provider
+      ? { upstreamProvider: current.upstream_provider }
+      : {}),
+    ...(current.upstream_provider_name
+      ? { upstreamProviderName: current.upstream_provider_name }
+      : {}),
+    ...(current.catalog_source
+      ? { catalogSource: current.catalog_source }
+      : {}),
+    ...(current.effective_default_model
+      ? { effectiveDefaultModel: current.effective_default_model }
+      : {}),
+    ...(current.effective_default_effort
+      ? { effectiveDefaultEffort: current.effective_default_effort }
+      : {}),
   };
 }
 

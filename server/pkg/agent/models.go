@@ -106,7 +106,12 @@ type ThinkingLevel struct {
 // Catalog is the outcome of one model-discovery round: the models to show,
 // plus whether they were actually discovered.
 type Catalog struct {
-	Models []Model
+	Models                 []Model
+	UpstreamProvider       string
+	UpstreamProviderName   string
+	CatalogSource          string
+	EffectiveDefaultModel  string
+	EffectiveDefaultEffort string
 	// Unavailable carries models the runtime named but will not run here. It is
 	// deliberately NOT part of Models: every capability lookup in this package
 	// walks Models, so keeping these out is what makes an unrunnable model fail
@@ -165,6 +170,7 @@ func discovered(models []Model, err error) (Catalog, error) {
 type modelCacheEntry struct {
 	models      []Model
 	unavailable []UnavailableModel
+	metadata    Catalog
 	expiresAt   time.Time
 }
 
@@ -522,7 +528,10 @@ func cachedDiscovery(key string, fn func() (Catalog, error)) (Catalog, error) {
 	if entry, ok := modelCache[key]; ok && time.Now().Before(entry.expiresAt) {
 		out, unavailable := entry.models, entry.unavailable
 		modelCacheMu.Unlock()
-		return Catalog{Models: out, Unavailable: unavailable}, nil
+		cached := entry.metadata
+		cached.Models = out
+		cached.Unavailable = unavailable
+		return cached, nil
 	}
 	modelCacheMu.Unlock()
 
@@ -550,7 +559,14 @@ func cachedDiscovery(key string, fn func() (Catalog, error)) (Catalog, error) {
 	modelCache[key] = modelCacheEntry{
 		models:      catalog.Models,
 		unavailable: catalog.Unavailable,
-		expiresAt:   time.Now().Add(modelCacheTTL),
+		metadata: Catalog{
+			UpstreamProvider:       catalog.UpstreamProvider,
+			UpstreamProviderName:   catalog.UpstreamProviderName,
+			CatalogSource:          catalog.CatalogSource,
+			EffectiveDefaultModel:  catalog.EffectiveDefaultModel,
+			EffectiveDefaultEffort: catalog.EffectiveDefaultEffort,
+		},
+		expiresAt: time.Now().Add(modelCacheTTL),
 	}
 	modelCacheMu.Unlock()
 	return catalog, nil
