@@ -1383,7 +1383,7 @@
     "link_placeholder": "Paste a pull request URL",
     "link_hint": "PRs with {{identifier}} in the title or branch name link automatically.",
     "link_submit": "Link",
-    "link_not_found": "Multica hasn’t received this PR yet. Check that its repository is connected.",
+    "link_not_found": "TaskAgent hasn’t received this PR yet. Check that its repository is connected.",
     "link_failed": "Couldn’t link the pull request.",
     "row_menu": "Pull request actions",
     "section_menu": "Pull request automation",

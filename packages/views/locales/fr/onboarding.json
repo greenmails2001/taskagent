@@ -1,6 +1,6 @@
 {
   "step_nav": {
-    "wordmark": "Multica",
+    "wordmark": "TaskAgent",
     "label": "Étapes de prise en main",
     "about_you": {
       "label": "À propos de vous"
@@ -9,11 +9,11 @@
       "label": "Espace de travail"
     },
     "runtime": {
-      "label": "Rencontrez Mika"
+      "label": "Rencontrez HBC"
     }
   },
   "welcome": {
-    "wordmark": "Bienvenue sur Multica",
+    "wordmark": "Bienvenue sur TaskAgent",
     "headline_line1": "Vos coéquipiers IA,",
     "headline_line2": "dans",
     "headline_emphasis": "un seul espace de travail.",
@@ -54,7 +54,7 @@
   },
   "source_backfill": {
     "eyebrow": "Une question rapide",
-    "lede": "Aidez-nous à comprendre comment vous avez découvert Multica.",
+    "lede": "Aidez-nous à comprendre comment vous avez découvert TaskAgent.",
     "submit": "Envoyer",
     "save_failed_toast": "Échec de l'enregistrement"
   },
@@ -63,7 +63,7 @@
       "question": "Parlez-nous un peu de vous."
     },
     "source": {
-      "question": "Comment avez-vous connu Multica ?",
+      "question": "Comment avez-vous connu TaskAgent ?",
       "friends_colleagues": "Amis ou collègues",
       "search": "Google / moteur de recherche",
       "social_x": "X / Twitter",
@@ -94,7 +94,7 @@
       "other_placeholder": "ex. enseignant, responsable support"
     },
     "use_case": {
-      "question": "Pour quoi voulez-vous utiliser Multica ?",
+      "question": "Pour quoi voulez-vous utiliser TaskAgent ?",
       "ship_code": "Livrer du code avec des agents IA",
       "manage_team": "Gérer les tâches de mon équipe",
       "personal_tasks": "Organiser mes propres tâches",
@@ -116,7 +116,7 @@
   "cli_install": {
     "copy_aria": "Copier",
     "intro": "Il vous faut un runtime d'agent sur cet ordinateur (Claude Code, Codex, Cursor, …) pour qu'il exécute votre agent. Fonctionne aussi sur des serveurs et des machines de développement distantes.",
-    "step1_label": "Installer le CLI Multica",
+    "step1_label": "Installer le CLI TaskAgent",
     "platform_group": "Choisissez votre système",
     "platform_macos_linux": "macOS / Linux",
     "platform_windows": "Windows",
@@ -138,8 +138,8 @@
   "welcome_after_onboarding": {
     "skip": {
       "loading": "Configuration de votre espace de travail…",
-      "title": "Bienvenue sur Multica !",
-      "subtitle": "Nous avons ajouté une tâche pour vous aider à connecter un runtime. Une fois prêt, commencez avec Mika depuis Runtimes.",
+      "title": "Bienvenue sur TaskAgent !",
+      "subtitle": "Nous avons ajouté une tâche pour vous aider à connecter un runtime. Une fois prêt, commencez avec HBC depuis Runtimes.",
       "got_it": "Compris",
       "status_in_progress": "En cours",
       "error_title": "Nous n'avons pas pu mettre cela en place",
@@ -149,7 +149,7 @@
       "cards": {
         "install_runtime": {
           "title": "Connecter un runtime",
-          "subtitle": "Installez Codex ou Kimi, puis démarrez la discussion guidée avec Mika depuis Runtimes."
+          "subtitle": "Installez Codex ou Kimi, puis démarrez la discussion guidée avec HBC depuis Runtimes."
         }
       }
     }
@@ -188,7 +188,7 @@
     "create_failed_toast": "Échec de la création de l'espace de travail",
     "creation_disabled_eyebrow": "La création d'espaces de travail est désactivée",
     "creation_disabled_headline": "Demandez une invitation à votre administrateur.",
-    "creation_disabled_lede": "Cette instance Multica n'autorise pas la création de nouveaux espaces de travail. Dès qu'un administrateur vous invite, acceptez l'invitation et actualisez pour continuer.",
+    "creation_disabled_lede": "Cette instance TaskAgent n'autorise pas la création de nouveaux espaces de travail. Dès qu'un administrateur vous invite, acceptez l'invitation et actualisez pour continuer.",
     "creation_disabled_logout": "Se déconnecter",
     "creation_disabled_eyebrow_resume": "Votre espace de travail",
     "creation_disabled_headline_resume": "Continuez avec {{name}}.",
@@ -198,7 +198,7 @@
     "scanning_headline": "Connexion de cet ordinateur…",
     "scanning_lede_prefix": "Votre agent passe par un outil de codage IA que vous possédez déjà — comme ",
     "scanning_lede_suffix": ", et d'autres. Nous vérifions lesquels sont installés sur cet ordinateur.",
-    "found_headline": "Où Mika doit-il s'exécuter ?",
+    "found_headline": "Où HBC doit-il s'exécuter ?",
     "runtime_count_one": "{{count}} runtime d'agent",
     "runtime_count_other": "{{count}} runtimes d'agent",
     "status_all_online": "tous en ligne",
@@ -219,17 +219,17 @@
     "refresh": "Actualiser",
     "refreshing": "Actualisation…",
     "hint_selected": "Sélectionné : {{name}}",
-    "hint_pick": "Choisissez un runtime d'agent ci-dessus pour commencer avec Mika.",
+    "hint_pick": "Choisissez un runtime d'agent ci-dessus pour commencer avec HBC.",
     "hint_waiting": "En attente du premier résultat…",
-    "continue": "Commencer avec Mika"
+    "continue": "Commencer avec HBC"
   },
   "step_platform": {
     "eyebrow": "Connecter un ordinateur",
     "headline": "Connectez un ordinateur pour exécuter votre agent.",
-    "lede": "Connectez un ordinateur pour que Mika puisse travailler.",
+    "lede": "Connectez un ordinateur pour que HBC puisse travailler.",
     "hint_default": "Vous pouvez vous connecter plus tard.",
     "download_title": "Utiliser cet ordinateur",
-    "download_subtitle": "Installez Multica Desktop pour connecter cet ordinateur.",
+    "download_subtitle": "Installez TaskAgent Desktop pour connecter cet ordinateur.",
     "download_button": "Télécharger",
     "cli_title": "Connecter depuis le terminal",
     "cli_subtitle": "Connectez un serveur, une machine de développement distante, ou tout ordinateur sans interface graphique. Terminal requis.",
@@ -255,12 +255,12 @@
   },
   "errors": {
     "skip_failed": "Échec de la finalisation de la prise en main",
-    "mika_setup_failed": "Impossible de démarrer votre espace de travail Mika"
+    "mika_setup_failed": "Impossible de démarrer votre espace de travail HBC"
   },
   "mika_intro": {
-    "headline": "Rencontrez Mika, votre premier coéquipier agent.",
-    "name": "Mika",
+    "headline": "Rencontrez HBC, votre premier coéquipier agent.",
+    "name": "HBC",
     "role": "Chef de cabinet",
-    "blurb": "Dites à Mika ce que vous voulez faire. Cela devient une tâche, avec le bon agent dessus."
+    "blurb": "Dites à HBC ce que vous voulez faire. Cela devient une tâche, avec le bon agent dessus."
   }
 }

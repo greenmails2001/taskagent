@@ -1340,7 +1340,7 @@
     "link_placeholder": "PR URL 붙여넣기",
     "link_hint": "제목이나 브랜치 이름에 {{identifier}}가 있는 PR은 자동으로 연결됩니다.",
     "link_submit": "연결",
-    "link_not_found": "Multica가 아직 이 PR을 받지 못했습니다. 저장소가 연결되어 있는지 확인하세요.",
+    "link_not_found": "TaskAgent가 아직 이 PR을 받지 못했습니다. 저장소가 연결되어 있는지 확인하세요.",
     "link_failed": "PR을 연결하지 못했습니다.",
     "row_menu": "PR 작업",
     "section_menu": "PR 자동화",
