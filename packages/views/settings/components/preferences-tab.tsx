@@ -58,6 +58,7 @@ import {
   SettingsSection,
   SettingsTab,
 } from "./settings-layout";
+import { UserMessageAppearanceSettings } from "./user-message-appearance-settings";
 
 /**
  * Preferences on one page. The settings here are stored in three different
@@ -88,6 +89,7 @@ export function PreferencesTab() {
       >
         <SettingsCard>
           <ThemeRow />
+          <UserMessageAppearanceSettings />
         </SettingsCard>
       </SettingsSection>
 

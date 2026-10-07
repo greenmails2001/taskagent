@@ -59,6 +59,13 @@ vi.mock("@multica/core/i18n/react", async () => {
 const chatState = vi.hoisted(() => ({
   floatingChatEnabled: true,
   setFloatingChatEnabled: vi.fn(),
+  userMessageAppearance: {
+    textColor: null,
+    backgroundColor: null,
+    borderColor: null,
+  },
+  setUserMessageAppearance: vi.fn(),
+  resetUserMessageAppearance: vi.fn(),
 }));
 vi.mock("@multica/core/chat", () => ({
   useChatStore: Object.assign(
