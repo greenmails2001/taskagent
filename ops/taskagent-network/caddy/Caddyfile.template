@@ -1,0 +1,11 @@
+{$TASKAGENT_CADDY_SITE} {
+	encode zstd gzip
+
+	@backend path /health /healthz /api /api/* /auth /auth/* /uploads /uploads/* /v1 /v1/* /ws
+	reverse_proxy @backend {$TASKAGENT_INTERNAL_BACKEND_URL}
+
+	@observer path /mcp /mcp/*
+	reverse_proxy @observer {$TASKAGENT_OBSERVER_URL}
+
+	reverse_proxy {$TASKAGENT_FRONTEND_URL}
+}

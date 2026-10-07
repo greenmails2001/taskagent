@@ -124,6 +124,23 @@ func TestReportModelListResult_PreservesDefault(t *testing.T) {
 	}
 }
 
+func TestProviderCatalogProjectionUsesDiscoveredModelsAndEfforts(t *testing.T) {
+	models := []ModelEntry{
+		{ID: "cx/gpt-6.1-sol", Label: "GPT-6.1 Sol", Thinking: &ModelThinking{SupportedLevels: []ThinkingLevel{{Value: "low", Label: "Low"}, {Value: "medium", Label: "Medium"}}}},
+		{ID: "cx/future-model", Label: ""},
+	}
+	rows := providerCatalogProjectionRows("9router", "provider_api", false, models)
+	if len(rows) != 2 || rows[0].ModelKey != "cx/gpt-6.1-sol" || rows[1].DisplayName != "cx/future-model" {
+		t.Fatalf("unexpected projection rows: %+v", rows)
+	}
+	if len(rows[0].Efforts) != 2 || rows[0].Efforts[0].Key != "low" || rows[0].Efforts[1].Key != "medium" {
+		t.Fatalf("unexpected effort projection: %+v", rows[0].Efforts)
+	}
+	if got := providerCatalogProjectionRows("9router", "bundled_fallback", true, models); got != nil {
+		t.Fatalf("fallback catalog must not project into provider catalog: %+v", got)
+	}
+}
+
 // TestInMemoryModelListStore_HasPending pins the cheap probe used by the
 // heartbeat hot path. Empty queue → false; pending request → true; after
 // PopPending claims the record → false again.

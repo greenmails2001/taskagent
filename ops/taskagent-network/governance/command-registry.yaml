@@ -1,0 +1,27 @@
+schema_version: n9-command-registry/v1
+commands:
+  - id: taskagent-network-validate
+    name: Validate TaskAgent network contract
+    group: taskagent-network
+    source: scripts/validate-config.sh
+    runtime: bash
+    risk: read_only
+    approval: none
+    verification: config_contract.test.sh
+  - id: taskagent-network-backup
+    name: Create recoverable TaskAgent database and upload backup
+    group: taskagent-network
+    source: scripts/backup-taskagent.sh
+    runtime: bash
+    risk: controlled_write
+    approval: operator
+    audit: receipt plus SHA-256 manifests
+    verification: pg_restore list and isolated restore gate
+  - id: taskagent-network-monitor
+    name: Run deterministic TaskAgent network monitor
+    group: taskagent-network
+    source: scripts/run-monitor.sh
+    runtime: bash
+    risk: bounded_external_write_on_failure
+    approval: preapproved webhook only
+    verification: failure fingerprint and TaskAgent incident receipt

@@ -1,0 +1,26 @@
+{
+  "managedBy": "n9-network-provisioner",
+  "manifestVersion": "1",
+  "runtimeRole": "network_ops_primary",
+  "runtimeNameEnv": "N9_NETWORK_PRIMARY_RUNTIME_NAME",
+  "providerKey": "9route",
+  "modelKey": "cx/gpt-6.1-sol",
+  "effortKey": "low",
+  "skills": [
+    "n9-network-operations",
+    "n9-taskagent-ingress",
+    "n9-upload-storage-integrity",
+    "n9-runtime-connectivity"
+  ],
+  "agents": [
+    {"name":"n9_network_lead","description":"Coordinates bounded N9 network incident diagnosis.","skills":["n9-network-operations","n9-taskagent-ingress","n9-runtime-connectivity"]},
+    {"name":"n9_network_ingress","description":"Diagnoses DNS, TLS, Caddy, Cloudflare and WebSocket boundaries.","skills":["n9-network-operations","n9-taskagent-ingress"]},
+    {"name":"n9_network_service","description":"Diagnoses TaskAgent process, listener and service health.","skills":["n9-network-operations"]},
+    {"name":"n9_network_storage","description":"Verifies upload permissions and attachment integrity without broad deletion.","skills":["n9-network-operations","n9-upload-storage-integrity"]},
+    {"name":"n9_network_runtime","description":"Diagnoses Multica runtime control-plane connectivity.","skills":["n9-network-operations","n9-runtime-connectivity"]},
+    {"name":"n9_network_verifier","description":"Independently verifies incident fixes and rollback evidence.","skills":["n9-network-operations","n9-taskagent-ingress","n9-upload-storage-integrity","n9-runtime-connectivity"]},
+    {"name":"n9_network_documenter","description":"Maintains incident receipts and network operations documentation.","skills":["n9-network-operations"]}
+  ],
+  "squad": {"name":"n9_network_ops","description":"Managed N9 network operations squad.","leader":"n9_network_lead"},
+  "autopilot": {"name":"n9_network_incident_triage","executionMode":"create_issue","assigneeType":"squad","trigger":{"kind":"webhook","label":"N9 deterministic monitor incident"}}
+}

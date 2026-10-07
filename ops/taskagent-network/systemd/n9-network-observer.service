@@ -1,0 +1,21 @@
+[Unit]
+Description=N9 bounded TaskAgent network observer MCP
+After=network-online.target taskagent-backend-native.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/taskagent-network/observer
+EnvironmentFile=/etc/taskagent/taskagent.env
+EnvironmentFile=/etc/taskagent/network-observer.secret.env
+ExecStart=/usr/bin/node /opt/taskagent-network/observer/server.mjs
+Restart=on-failure
+User=localai
+Group=localai
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/u01/apps/n9/data/taskagent/uploads
+
+[Install]
+WantedBy=multi-user.target

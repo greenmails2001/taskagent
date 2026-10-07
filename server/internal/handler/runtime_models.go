@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -91,6 +92,97 @@ type ModelCatalogMetadata struct {
 	CatalogSource          string
 	EffectiveDefaultModel  string
 	EffectiveDefaultEffort string
+}
+
+type providerCatalogEffortProjection struct {
+	Key         string
+	DisplayName string
+}
+
+type providerCatalogModelProjection struct {
+	ModelKey    string
+	DisplayName string
+	Efforts     []providerCatalogEffortProjection
+}
+
+func providerCatalogProjectionRows(upstreamProvider, catalogSource string, fallback bool, models []ModelEntry) []providerCatalogModelProjection {
+	if fallback || catalogSource != "provider_api" {
+		return nil
+	}
+	provider := strings.ToLower(strings.TrimSpace(upstreamProvider))
+	if provider == "9router" {
+		provider = "9route"
+	}
+	if provider == "" {
+		return nil
+	}
+	rows := make([]providerCatalogModelProjection, 0, len(models))
+	for _, model := range models {
+		modelKey := strings.TrimSpace(model.ID)
+		if modelKey == "" {
+			continue
+		}
+		displayName := strings.TrimSpace(model.Label)
+		if displayName == "" {
+			displayName = modelKey
+		}
+		row := providerCatalogModelProjection{ModelKey: modelKey, DisplayName: displayName}
+		if model.Thinking != nil {
+			for _, effort := range model.Thinking.SupportedLevels {
+				key := strings.TrimSpace(string(effort.Value))
+				if key == "" {
+					continue
+				}
+				label := strings.TrimSpace(effort.Label)
+				if label == "" {
+					label = key
+				}
+				row.Efforts = append(row.Efforts, providerCatalogEffortProjection{Key: key, DisplayName: label})
+			}
+		}
+		rows = append(rows, row)
+	}
+	return rows
+}
+
+func (h *Handler) projectDiscoveredProviderCatalog(ctx context.Context, upstreamProvider, catalogSource string, fallback bool, models []ModelEntry) error {
+	rows := providerCatalogProjectionRows(upstreamProvider, catalogSource, fallback, models)
+	if rows == nil {
+		return nil
+	}
+	providerKey := strings.ToLower(strings.TrimSpace(upstreamProvider))
+	if providerKey == "9router" {
+		providerKey = "9route"
+	}
+	tx, err := h.TxStarter.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	for _, row := range rows {
+		var modelID string
+		err := tx.QueryRow(ctx, `
+			INSERT INTO provider_model (ai_provider_id, model_key, display_name)
+			SELECT id, $2, $3 FROM ai_provider WHERE provider_key = $1 AND enabled = true
+			ON CONFLICT (ai_provider_id, model_key) DO UPDATE
+			SET display_name = EXCLUDED.display_name, enabled = true, updated_at = now()
+			RETURNING id::text
+		`, providerKey, row.ModelKey, row.DisplayName).Scan(&modelID)
+		if err != nil {
+			return err
+		}
+		for order, effort := range row.Efforts {
+			if _, err := tx.Exec(ctx, `
+				INSERT INTO provider_model_effort (provider_model_id, effort_key, display_name, sort_order)
+				VALUES ($1::uuid, $2, $3, $4)
+				ON CONFLICT (provider_model_id, effort_key) DO UPDATE
+				SET display_name = EXCLUDED.display_name, sort_order = EXCLUDED.sort_order, enabled = true
+			`, modelID, effort.Key, effort.DisplayName, order); err != nil {
+				return err
+			}
+		}
+	}
+	return tx.Commit(ctx)
 }
 
 // ModelEntry mirrors agent.Model for the wire. `Default` tags the
@@ -570,6 +662,9 @@ func (h *Handler) ReportModelListResult(w http.ResponseWriter, r *http.Request) 
 			slog.Error("ModelListStore Complete failed", "error", err, "request_id", requestID)
 			writeError(w, http.StatusInternalServerError, "failed to persist completion")
 			return
+		}
+		if err := h.projectDiscoveredProviderCatalog(r.Context(), body.UpstreamProvider, body.CatalogSource, body.Fallback, body.Models); err != nil {
+			slog.Warn("provider catalog projection failed; runtime catalog report remains authoritative", "error", err, "runtime_id", runtimeID, "upstream_provider", body.UpstreamProvider)
 		}
 		// Warm the catalog cache so the next picker open renders instantly
 		// (MUL-5444). A cache write failure is not the daemon's problem — the

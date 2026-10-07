@@ -1,0 +1,15 @@
+{
+  "name": "n9-network-observer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test ../tests/observer_security.test.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "express": "5.1.0",
+    "zod": "4.1.12"
+  }
+}

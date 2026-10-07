@@ -1,0 +1,10 @@
+[Unit]
+Description=Run N9 TaskAgent TLS certificate check every six hours
+
+[Timer]
+OnBootSec=8m
+OnUnitActiveSec=6h
+Unit=n9-network-monitor@certificate.service
+
+[Install]
+WantedBy=timers.target

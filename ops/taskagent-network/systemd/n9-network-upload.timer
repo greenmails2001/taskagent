@@ -1,0 +1,10 @@
+[Unit]
+Description=Run N9 TaskAgent upload integrity check every fifteen minutes
+
+[Timer]
+OnBootSec=4m
+OnUnitActiveSec=15m
+Unit=n9-network-monitor@upload.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,10 @@
+[Unit]
+Description=Run N9 TaskAgent configuration drift check hourly
+
+[Timer]
+OnBootSec=6m
+OnUnitActiveSec=1h
+Unit=n9-network-monitor@drift.service
+
+[Install]
+WantedBy=timers.target

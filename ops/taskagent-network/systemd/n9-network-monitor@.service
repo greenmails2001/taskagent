@@ -1,0 +1,15 @@
+[Unit]
+Description=N9 TaskAgent deterministic network monitor (%i)
+After=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/taskagent/taskagent.env
+EnvironmentFile=-/etc/taskagent/network-observer.secret.env
+ExecStart=/opt/taskagent-network/scripts/run-monitor.sh /etc/taskagent/taskagent.env %i
+User=localai
+Group=localai
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true

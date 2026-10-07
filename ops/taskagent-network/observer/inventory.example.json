@@ -1,0 +1,22 @@
+{
+  "targets": {
+    "taskagent_public": {
+      "urlEnv": "TASKAGENT_API_ORIGIN",
+      "allowedCidrsEnv": "N9_NETWORK_PUBLIC_ALLOWED_CIDRS"
+    },
+    "taskagent_backend": {
+      "urlEnv": "TASKAGENT_INTERNAL_BACKEND_URL",
+      "allowedCidrs": ["127.0.0.1/32"],
+      "allowPrivate": true
+    }
+  },
+  "services": [
+    "taskagent-backend-native.service",
+    "taskagent-web-native.service",
+    "n9-network-observer.service"
+  ],
+  "issue": {
+    "workspaceIdEnv": "TASKAGENT_NETWORK_WORKSPACE_ID",
+    "projectIdEnv": "TASKAGENT_NETWORK_PROJECT_ID"
+  }
+}
