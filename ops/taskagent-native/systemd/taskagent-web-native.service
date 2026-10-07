@@ -1,0 +1,16 @@
+[Unit]
+Description=N9 TaskAgent native web
+After=network-online.target taskagent-backend-native.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/u01/apps/n9/sources/taskagent-source
+EnvironmentFile=/u01/apps/n9/config/taskagent/web.env
+ExecStart=/usr/bin/env pnpm --filter @multica/web exec next start --hostname ${HOSTNAME} --port ${FRONTEND_PORT}
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target

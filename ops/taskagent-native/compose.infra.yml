@@ -1,0 +1,24 @@
+name: n9-taskagent
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-multica}
+      POSTGRES_USER: ${POSTGRES_USER:-multica}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    ports:
+      - "${POSTGRES_BIND_ADDRESS:-127.0.0.1}:${POSTGRES_PORT:-7432}:5432"
+    volumes:
+      - taskagent-postgres:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-multica} -d ${POSTGRES_DB:-multica}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  taskagent-postgres:
+    external: true
+    name: ${TASKAGENT_POSTGRES_VOLUME:-n9-taskagent_taskagent-postgres}
