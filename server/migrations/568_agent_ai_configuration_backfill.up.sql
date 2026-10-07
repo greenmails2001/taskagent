@@ -1,3 +1,9 @@
+-- The legacy agent fields remain the execution authority. Suppress the
+-- compatibility projection while copying rows so existing model/effort values
+-- cannot be normalized or erased by the temporary sync trigger.
+ALTER TABLE agent_ai_configuration
+    DISABLE TRIGGER agent_ai_configuration_sync_agent;
+
 INSERT INTO agent_ai_configuration (
     agent_id,
     workspace_id,
@@ -46,3 +52,6 @@ WHERE agent.runtime_id IS NOT NULL
   AND agent.model <> ''
   AND provider.credential_mode = 'runtime_managed'
 ON CONFLICT (agent_id) DO NOTHING;
+
+ALTER TABLE agent_ai_configuration
+    ENABLE TRIGGER agent_ai_configuration_sync_agent;

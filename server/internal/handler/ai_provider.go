@@ -371,6 +371,16 @@ func (h *Handler) UpdateAgentAIConfiguration(w http.ResponseWriter, r *http.Requ
 		writeError(w, http.StatusBadRequest, "AI provider, account, model, and effort must belong to the same configuration")
 		return
 	}
+	if _, err := tx.Exec(r.Context(), `
+		UPDATE agent
+		SET model = $2,
+		    thinking_level = COALESCE($3::text, ''),
+		    updated_at = now()
+		WHERE id = $1
+	`, existing.ID, modelKey, effortValue); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to apply AI configuration to agent execution settings")
+		return
+	}
 	if err := tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to commit AI configuration")
 		return

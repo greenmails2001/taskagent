@@ -95,7 +95,7 @@ The active SMTP metadata and AES-256-GCM ciphertext are stored in PostgreSQL tab
 
 Back up the PostgreSQL database and `backend.env` together. A database dump without the matching master key cannot decrypt the SMTP password. Before rotating the password, use the Email screen to save the new password and send a test message. Leaving the password field blank preserves the existing ciphertext.
 
-Environment variables `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_EMAIL`, `SMTP_TLS`, and `SMTP_EHLO_NAME` remain the rollback source when no enabled database setting can be loaded. Migration `504_instance_email_settings` is applied with:
+Environment variables `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_EMAIL`, `SMTP_TLS`, and `SMTP_EHLO_NAME` remain the rollback source when no enabled database setting can be loaded. Migration `569_instance_email_settings` is applied with:
 
 ```bash
 cd /u01/apps/n9/sources/taskagent-source/server

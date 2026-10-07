@@ -250,6 +250,30 @@ func TestNewEmailService_FromEmailResolution(t *testing.T) {
 	}
 }
 
+func TestApplyEnvironmentConfigRestoresEnvironmentSettings(t *testing.T) {
+	t.Setenv("SMTP_HOST", "env-mail.example.com")
+	t.Setenv("SMTP_PORT", "2525")
+	t.Setenv("SMTP_USERNAME", "env-user")
+	t.Setenv("SMTP_PASSWORD", "env-password")
+	t.Setenv("SMTP_FROM_EMAIL", "env@example.com")
+	t.Setenv("SMTP_EHLO_NAME", "env-ehlo.example.com")
+
+	s := NewEmailService()
+	s.ApplyConfig(EmailConfig{SMTPHost: "database-mail.example.com", SMTPPort: "587"})
+	s.ApplyEnvironmentConfig()
+
+	snapshot := s.snapshot()
+	if snapshot.smtpHost != "env-mail.example.com" || snapshot.smtpPort != "2525" {
+		t.Fatalf("environment SMTP endpoint not restored: host=%q port=%q", snapshot.smtpHost, snapshot.smtpPort)
+	}
+	if snapshot.smtpUsername != "env-user" || snapshot.smtpPassword != "env-password" {
+		t.Fatal("environment SMTP credentials not restored")
+	}
+	if snapshot.fromEmail != "env@example.com" || snapshot.smtpEHLOName != "env-ehlo.example.com" {
+		t.Fatalf("environment sender settings not restored: from=%q ehlo=%q", snapshot.fromEmail, snapshot.smtpEHLOName)
+	}
+}
+
 func TestSendSMTPRequiresConfiguredFromEmail(t *testing.T) {
 	s := &EmailService{
 		smtpHost:     "127.0.0.1",

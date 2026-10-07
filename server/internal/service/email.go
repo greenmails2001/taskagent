@@ -55,6 +55,26 @@ func (s *EmailService) ApplyConfig(cfg EmailConfig) {
 	s.applyConfigLocked(cfg)
 }
 
+// ApplyEnvironmentConfig restores the process-level mail configuration after
+// a database override is disabled.
+func (s *EmailService) ApplyEnvironmentConfig() {
+	fresh := NewEmailService()
+	fresh.mu.RLock()
+	defer fresh.mu.RUnlock()
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.client = fresh.client
+	s.fromEmail = fresh.fromEmail
+	s.smtpHost = fresh.smtpHost
+	s.smtpPort = fresh.smtpPort
+	s.smtpUsername = fresh.smtpUsername
+	s.smtpPassword = fresh.smtpPassword
+	s.smtpTLSInsecure = fresh.smtpTLSInsecure
+	s.smtpTLSImplicit = fresh.smtpTLSImplicit
+	s.smtpEHLOName = fresh.smtpEHLOName
+}
+
 func (s *EmailService) applyConfigLocked(cfg EmailConfig) {
 	s.client = nil
 	if cfg.ResendAPIKey != "" {

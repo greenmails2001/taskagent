@@ -2,6 +2,7 @@ package migrations
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"runtime"
 	"sort"
@@ -58,6 +59,18 @@ func TestMigrationFilesHaveMatchingDirections(t *testing.T) {
 		if !directions["up"] || !directions["down"] {
 			t.Errorf("migration %s must have both .up.sql and .down.sql files", stem)
 		}
+	}
+}
+
+func TestAIConfigurationBackfillDoesNotProjectIntoAgent(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join(realMigrationsDir(t), "568_agent_ai_configuration_backfill.up.sql"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	sql := string(body)
+	if !strings.Contains(sql, "DISABLE TRIGGER agent_ai_configuration_sync_agent") ||
+		!strings.Contains(sql, "ENABLE TRIGGER agent_ai_configuration_sync_agent") {
+		t.Fatal("AI configuration backfill must suppress projection trigger to preserve legacy model and thinking_level")
 	}
 }
 

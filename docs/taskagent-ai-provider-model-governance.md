@@ -192,7 +192,7 @@ machine's backup.
 
 ## Data-preserving migration
 
-Migration `506_retire_agent_ai_configuration_projection` drops only the three
+Migration `571_retire_agent_ai_configuration_projection` drops only the three
 projection triggers and their functions. It does not drop, truncate, rewrite,
 or delete any provider/model/configuration table or row. Its down migration can
 restore the prior trigger behavior if an application rollback requires it.

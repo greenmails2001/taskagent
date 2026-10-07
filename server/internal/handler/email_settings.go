@@ -213,12 +213,16 @@ func (h *Handler) UpdateInstanceEmailSettings(w http.ResponseWriter, r *http.Req
 		writeError(w, http.StatusInternalServerError, "failed to commit email settings")
 		return
 	}
-	h.EmailService.ApplyConfig(service.EmailConfig{
-		FromEmail: req.SMTPFromEmail, SMTPHost: req.SMTPHost,
-		SMTPPort: strconv.Itoa(req.SMTPPort), SMTPUsername: req.SMTPUsername,
-		SMTPPassword: password, SMTPTLSImplicit: req.SMTPTLS == "implicit",
-		SMTPEHLOName: req.SMTPEHLOName,
-	})
+	if req.Enabled {
+		h.EmailService.ApplyConfig(service.EmailConfig{
+			FromEmail: req.SMTPFromEmail, SMTPHost: req.SMTPHost,
+			SMTPPort: strconv.Itoa(req.SMTPPort), SMTPUsername: req.SMTPUsername,
+			SMTPPassword: password, SMTPTLSImplicit: req.SMTPTLS == "implicit",
+			SMTPEHLOName: req.SMTPEHLOName,
+		})
+	} else {
+		h.EmailService.ApplyEnvironmentConfig()
+	}
 	response, _, _ := h.emailSettingsRow(r.Context())
 	writeJSON(w, http.StatusOK, response)
 }
